@@ -1,48 +1,28 @@
 #!/usr/bin/env bash
 
 ######################################################################
-#Copyright (C) 2015, Battelle National Biodefense Institute (BNBI);
-#all rights reserved. Authored by: Sergey Koren
+#  PUBLIC DOMAIN NOTICE
 #
-#This Software was prepared for the Department of Homeland Security
-#(DHS) by the Battelle National Biodefense Institute, LLC (BNBI) as
-#part of contract HSHQDC-07-C-00020 to manage and operate the National
-#Biodefense Analysis and Countermeasures Center (NBACC), a Federally
-#Funded Research and Development Center.
+#  This software is "United States Government Work" under the terms of the United
+#  States Copyright Act. It was written as part of the authors' official duties
+#  for the United States Government and thus cannot be copyrighted. This software
+#  is freely available to the public for use without a copyright
+#  notice. Restrictions cannot be placed on its present or future use.
 #
-#Redistribution and use in source and binary forms, with or without
-#modification, are permitted provided that the following conditions are
-#met:
+#  Although all reasonable efforts have been taken to ensure the accuracy and
+#  reliability of the software and associated data, the National Human Genome
+#  Research Institute (NHGRI), National Institutes of Health (NIH) and the
+#  U.S. Government do not and cannot warrant the performance or results that may
+#  be obtained by using this software or data. NHGRI, NIH and the U.S. Government
+#  disclaim all warranties as to performance, merchantability or fitness for any
+#  particular purpose.
 #
-#* Redistributions of source code must retain the above copyright
-#  notice, this list of conditions and the following disclaimer.
-#
-#* Redistributions in binary form must reproduce the above copyright
-#  notice, this list of conditions and the following disclaimer in the
-#  documentation and/or other materials provided with the distribution.
-#
-#* Neither the name of the Battelle National Biodefense Institute nor
-#  the names of its contributors may be used to endorse or promote
-#  products derived from this software without specific prior written
-#  permission.
-#
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-#"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-#LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-#A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-#HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-#SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-#LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-#DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-#THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-#(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-#OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#  Please cite the authors in any work or product based on this material.
 ######################################################################
 
 SCRIPT_PATH=`cat scripts`
 
 source ~/.profile
-unset PYTHONPATH
 LD_ADDITION=`cat ${SCRIPT_PATH}/CONFIG |grep -v "#" |grep LD_LIBRARY_PATH |wc -l`
 if [ $LD_ADDITION -eq 1 ]; then
    LD_ADDITION=`cat ${SCRIPT_PATH}/CONFIG |grep -v "#" |grep LD_LIBRARY_PATH |tail -n 1 | awk '{print $NF}'`
@@ -74,6 +54,12 @@ fi
 line=`cat input.fofn |head -n $jobid |tail -n 1`
 prefix=`cat prefix`
 reference=`cat asm`
+
+if [ -e $prefix.$jobid.aln.bam ]; then
+   echo "Already done"
+   exit
+fi
+
 IS_BAM=`echo $line |grep ".bam$" |wc -l |awk '{print $1}'`
 if [ $IS_BAM -eq 0 ]; then
    # not a bam input convert
@@ -85,11 +71,11 @@ if [ $IS_BAM -eq 0 ]; then
 fi
 
 echo "Mapping $prefix $line to $reference"
-if [ -e $prefix.$jobid.aln.bam ]; then
-   echo "Already done"
-   exit
-fi
-
 mkdir -p tmpdir
 pbalign --tmpDir=`pwd`/tmpdir --minAccuracy=0.75 --minLength=50 --minAnchorSize=12 --maxDivergence=30 --concordant --algorithm=blasr --algorithmOptions=-useQuality --maxHits=1 --hitPolicy=random --seed=1 --nproc=8 $line $reference $prefix.$jobid.aln.bam 
 bamtools stats -in $prefix.$jobid.aln.bam
+
+if [ $IS_BAM -eq 0 ]; then
+   # removing converted bam file
+   rm -f $line
+fi

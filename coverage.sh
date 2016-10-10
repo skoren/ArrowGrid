@@ -22,6 +22,8 @@
 
 SCRIPT_PATH=`cat scripts`
 
+source ~/.profile
+
 LD_ADDITION=`cat ${SCRIPT_PATH}/CONFIG |grep -v "#"  |grep LD_LIBRARY_PATH |wc -l`
 if [ $LD_ADDITION -eq 1 ]; then
    LD_ADDITION=`cat ${SCRIPT_PATH}/CONFIG |grep -v "#"  |grep LD_LIBRARY_PATH |tail -n 1 |awk '{print $NF}'`
@@ -64,4 +66,4 @@ fi
 
 # instantiate/consolidate the dataset (this is IO penalty) and then dump coverage
 dataset consolidate $chunk $prefix.$jobid.byCtg.aln.bam $prefix.$jobid.byCtg.xml
-bamtools coverage -in $prefix.$jobid.byCtg.aln.bam $prefix.$jobid.coverage
+bamtools coverage -in $prefix.$jobid.byCtg.aln.bam -out $prefix.$jobid.coverage
