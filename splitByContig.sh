@@ -23,9 +23,15 @@
 SCRIPT_PATH=`cat scripts`
 
 source ~/.profile
-LD_ADDITION=`cat ${SCRIPT_PATH}/CONFIG |grep -v "#"  |grep LD_LIBRARY_PATH |wc -l`
+if [ -e `pwd`/CONFIG ]; then
+   CONFIG=`pwd`/CONFIG
+else
+   CONFIG=${SCRIPT_PATH}/CONFIG
+fi
+
+LD_ADDITION=`cat $CONFIG |grep -v "#"  |grep LD_LIBRARY_PATH |wc -l`
 if [ $LD_ADDITION -eq 1 ]; then
-   LD_ADDITION=`cat ${SCRIPT_PATH}/CONFIG |grep -v "#" |grep LD_LIBRARY_PATH |tail -n 1 |awk '{print $NF}'`
+   LD_ADDITION=`cat $CONFIG |grep -v "#" |grep LD_LIBRARY_PATH |tail -n 1 |awk '{print $NF}'`
    export LD_LIBRARY_PATH=$LD_ADDITION:$LD_LIBRARY_PATH
 fi
 
@@ -41,6 +47,10 @@ fi
 prefix=`cat prefix`
 asm=`cat asm`
 NUM_JOBS=`wc -l input.fofn |awk '{print $1}'`
+NUM_CTG=`grep -c ">" $asm`
+if [ $NUM_CTG -lt $NUM_JOBS ]; then
+   NUM_JOBS=$NUM_CTG
+fi
 
 echo "Cleaning up"
 rm -f $prefix.filtered.$jobid*
@@ -50,7 +60,8 @@ rm -rf filtered
 if [ -e $prefix.xml ]; then
    echo "Already done"
 else
+   echo "Splitting $asm into $NUM_CTG $NUM_JOBS"
    samtools faidx $asm
    dataset create --type AlignmentSet $prefix.xml $prefix.[0-9]*.aln.bam
-   dataset split --contig --chunks $NUM_JOBS --maxChunks $NUM_JOBS --outdir `pwd` $prefix.xml
+   dataset split --contig --maxChunks $NUM_JOBS --chunks $NUM_JOBS --outdir `pwd` $prefix.xml
 fi

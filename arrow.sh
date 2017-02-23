@@ -32,7 +32,13 @@ REFERENCE=$3
 
 NUM_JOBS=`wc -l $FOFN |awk '{print $1}'`
 
-ALGORITHM=`cat ${SCRIPT_PATH}/CONFIG |grep -v "#" |grep  ALGORITHM |tail -n 1 |awk '{print $2}'`
+if [ -e `pwd`/CONFIG ]; then
+   CONFIG=`pwd`/CONFIG
+else
+   CONFIG=${SCRIPT_PATH}/CONFIG
+fi
+
+ALGORITHM=`cat $CONFIG |grep -v "#" |grep  ALGORITHM |tail -n 1 |awk '{print $2}'`
 echo "$FOFN" > fofn
 echo "$PREFIX" > prefix
 echo "$REFERENCE" > asm
@@ -40,7 +46,7 @@ echo "$SCRIPT_PATH" > scripts
 echo "$ALGORITHM" > alg
 
 echo "Running with $PREFIX $REFERENCE $HOLD_ID"
-USEGRID=`cat ${SCRIPT_PATH}/CONFIG |grep -v "#" |grep USEGRID |awk '{print $NF}'`
+USEGRID=`cat $CONFIG |grep -v "#" |grep USEGRID |awk '{print $NF}'`
 if [ $USEGRID -eq 1 ]; then
    if [ $# -ge 4 ] && [ x$4 != "x" ]; then
        qsub -V -pe thread 8 -tc 50 -l mem_free=5G -t 1-$NUM_JOBS -hold_jid $5 -cwd -N "${PREFIX}align" -j y -o `pwd`/\$TASK_ID.out $SCRIPT_PATH/filterAndAlign.sh

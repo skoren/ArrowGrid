@@ -23,9 +23,16 @@
 SCRIPT_PATH=`cat scripts`
 
 source ~/.profile
-LD_ADDITION=`cat ${SCRIPT_PATH}/CONFIG |grep -v "#" |grep LD_LIBRARY_PATH |wc -l`
+
+if [ -e `pwd`/CONFIG ]; then
+   CONFIG=`pwd`/CONFIG
+else
+   CONFIG=${SCRIPT_PATH}/CONFIG
+fi
+
+LD_ADDITION=`cat $CONFIG |grep -v "#" |grep LD_LIBRARY_PATH |wc -l`
 if [ $LD_ADDITION -eq 1 ]; then
-   LD_ADDITION=`cat ${SCRIPT_PATH}/CONFIG |grep -v "#" |grep LD_LIBRARY_PATH |tail -n 1 | awk '{print $NF}'`
+   LD_ADDITION=`cat $CONFIG |grep -v "#" |grep LD_LIBRARY_PATH |tail -n 1 | awk '{print $NF}'`
    export LD_LIBRARY_PATH=$LD_ADDITION:$LD_LIBRARY_PATH
 fi
 
@@ -72,7 +79,7 @@ fi
 
 echo "Mapping $prefix $line to $reference"
 mkdir -p tmpdir
-pbalign --tmpDir=`pwd`/tmpdir --minAccuracy=0.75 --minLength=50 --minAnchorSize=12 --maxDivergence=30 --concordant --algorithm=blasr --algorithmOptions=-useQuality --maxHits=1 --hitPolicy=random --seed=1 --nproc=8 $line $reference $prefix.$jobid.aln.bam 
+pbalign --tmpDir=`pwd`/tmpdir --minAccuracy=0.75 --minLength=50 --minAnchorSize=12 --maxDivergence=30 --concordant --algorithm=blasr --algorithmOptions=--useQuality --maxHits=1 --hitPolicy=random --seed=1 --nproc=8 $line $reference $prefix.$jobid.aln.bam 
 bamtools stats -in $prefix.$jobid.aln.bam
 
 if [ $IS_BAM -eq 0 ]; then
