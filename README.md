@@ -18,10 +18,9 @@ sh arrow.sh input.fofn trio3 trio3.contigs.fasta
 
 The pipeline is very rough and has undergone limited testing so user beware.
 
-######CITE
+### CITE
 If you find this pipeline useful, please cite the original Quiver paper:<br>
-Chin et. al. [Nonhybrid, finished microbial genome assemblies from long-read SMRT sequencing data.](http://www.nature.com/nmeth/journal/v10/n6/full/nmeth.2474.html) Nature Methods, 2013
+Chin et al. [Nonhybrid, finished microbial genome assemblies from long-read SMRT sequencing data.](http://www.nature.com/nmeth/journal/v10/n6/full/nmeth.2474.html) Nature Methods, 2013
 
 and the Canu paper:<br>
-Koren S, et. al. [Canu: scalable and accurate long-read assembly via adaptive k-mer weighting and repeat separation](http://biorxiv.org/content/early/2016/08/24/071282). bioRxiv. (2016).
-
+Koren S et al. [Canu: scalable and accurate long-read assembly via adaptive k-mer weighting and repeat separation](https://doi.org/10.1101/gr.215087.116). Genome Research. (2017).
