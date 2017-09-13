@@ -44,15 +44,33 @@ if [ "$arch" = "x86_64" ] ; then
   arch="amd64"
 fi
 
-jobid=$SGE_TASK_ID
-if [ x$jobid = x -o x$jobid = xundefined -o x$jobid = x0 ]; then
-jobid=$1
+GRID=`cat $CONFIG |grep -v "#" |grep  GRIDENGINE |tail -n 1 |awk '{print $2}'`
+
+if [ $GRID == "SGE" ]; then
+   baseid=$SGE_TASK_ID
+   offset=$1
+elif [ $GRID == "SLURM" ]; then
+   baseid=$SLURM_ARRAY_TASK_ID
+   offset=$1
 fi
+
+if [ x$baseid = x -o x$baseid = xundefined -o x$baseid = x0 ]; then
+  baseid=$1
+  offset=0
+fi
+
+if [ x$offset = x ]; then
+  offset=0
+fi
+
+jobid=`expr $baseid + $offset`
 
 if test x$jobid = x; then
   echo Error: I need SGE_TASK_ID set, or a job index on the command line
   exit 1
 fi
+
+echo Running job $jobid based on command line options.
 
 prefix=`cat prefix`
 asm=`cat asm`
