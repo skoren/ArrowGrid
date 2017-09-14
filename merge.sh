@@ -52,8 +52,8 @@ NUM_JOBS=`wc -l input.fofn |awk '{print $1}'`
 echo "Cleaning up"
 for f in `ls $prefix.[0-9]*aln.bam`; do
    jobnum=`basename $f |sed s/$prefix.//g |sed s/.aln.bam//g`
-   IS_OK=`cat $jobnum.cns.out |grep -c Finished`
-   IS_OUT_OF_BOUNDS=`cat $jobnum.cns.out |grep -c "invalid job id"`
+   IS_OK=`cat *$jobnum.cns.out |grep -c Finished`
+   IS_OUT_OF_BOUNDS=`cat *$jobnum.cns.out |grep -c "invalid job id"`
    if [ $IS_OK -ge 1 ]; then
       echo "$jobnum is OK"
       rm -f $f

@@ -75,7 +75,7 @@ if [ $USEGRID -eq 1 ]; then
          if [ $m -gt $NUM_JOBS ]; then
             e=`expr $NUM_JOBS - $offset`
         fi
-        $command -a 1-$e -o `pwd`/%A_%a.polish.out $SCRIPT_PATH/filterAndAlign.sh $offset >> filter.submit.out 2>&1
+        $command -a 1-$e -o `pwd`/%A_%a.out $SCRIPT_PATH/filterAndAlign.sh $offset >> filter.submit.out 2>&1
       done
       job=`cat filter.submit.out |awk '{print "afterany:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
       echo "Submitted filter array job $job"
