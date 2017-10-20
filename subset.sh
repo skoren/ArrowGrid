@@ -73,12 +73,12 @@ fi
 
 echo Running job $jobid based on command line options.
 
-line=`cat input.fofn |head -n $jobid |tail -n 1`
+line=`cat filterfofn |head -n $jobid |tail -n 1`
 prefix=`cat prefix`
 reference=`cat asm`
 whitelist=`cat whitelist`
 
-if [ -e $prefix.$jobid.filtered.bam ]; then
+if [ -e seq/$prefix.$jobid.filtered.bam ]; then
    echo "Already done"
    exit
 fi
@@ -97,19 +97,37 @@ echo "Subsetting $prefix using files in $whitelist"
 # get list of read names in this file
 bam2fasta -o $jobid -u $line
 grep ">" $jobid.fasta |sed s/\>//g > $jobid.readnames
-java SubFile $jobid.readnames $whitelist 1 |awk '{print "qname="$2}' |tr '\n' ' ' > $jobid.filter
+java SubFile $jobid.readnames $whitelist 1 > $jobid.filterednames
 
-# now we can subset
+# subset in chunks to avoid making arguments too long
+split -d -a 5 -l 5000 $jobid.filterednames $jobid.split.
 dataset create $jobid.xml $line
-dataset filter $jobid.xml $jobid.filter.xml `cat $jobid.filter`
-dataset consolidate $jobid.filter.xml $prefix.$jobid.filtered.bam $jobid.final.xml
+
+for file in `ls $jobid.split.*`; do
+   ARGS=`cat $file |awk '{print "qname="$2}' |tr '\n' ' '`
+   ID=`echo $file |awk -F "." '{print $NF}'`
+
+   # now we can subset
+   dataset filter $jobid.xml $jobid.$ID.filter.xml $ARGS
+done
+
+# now we create the subsets in parallel
+ls $jobid.split.* |awk -F "." '{print $NF}' |parallel --tmpdir `pwd` -P 8 dataset --log-file $jobid.{1}.log consolidate $jobid.{1}.filter.xml $jobid.{1}.filtered.bam $jobid.{1}.final.xml
+
+# and merge
+dataset create $jobid.filtered.xml $jobid.*.filtered.bam
+dataset consolidate $jobid.filtered.xml seq/$prefix.$jobid.filtered.bam  seq/$prefix.$jobid.filtered.xml
 
 #clean up
-rm $jobid.xml
-rm $jobid.fasta
-rm $jobid.readnames
-rm $jobid.filter.xml
-rm $jobid.final.xml
+rm -f $jobid.xml
+rm -f $jobid.fasta
+rm -f $jobid.readnames
+rm -f $jobid.filter.xml
+rm -f $jobid.final.xml
+rm -f $jobid.split*
+rm -f $jobid.*.xml
+rm -f $jobid.*.filtered.bam*
+rm -f $jobid.*.log
 
 if [ $IS_BAM -eq 0 ]; then
    # removing converted bam file
