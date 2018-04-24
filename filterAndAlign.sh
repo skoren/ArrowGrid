@@ -77,7 +77,7 @@ line=`cat input.fofn |head -n $jobid |tail -n 1`
 prefix=`cat prefix`
 reference=`cat asm`
 
-if [ -e $prefix.$jobid.aln.bam ]; then
+if [ -e $prefix.$jobid.aln.bam.pbi ]; then
    echo "Already done"
    exit
 fi
