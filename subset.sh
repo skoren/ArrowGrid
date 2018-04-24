@@ -95,8 +95,7 @@ fi
 
 echo "Subsetting $prefix using files in $whitelist"
 # get list of read names in this file
-bam2fasta -o $jobid -u $line
-grep ">" $jobid.fasta |sed s/\>//g > $jobid.readnames
+samtools view $line | awk '{print $1}' > $jobid.readnames
 java -cp $SCRIPT_PATH:. SubFile $jobid.readnames $whitelist 1 > $jobid.filterednames
 
 # subset in chunks to avoid making arguments too long
