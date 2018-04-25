@@ -49,6 +49,11 @@ asm=`cat asm`
 ALGORITHM=`cat alg`
 NUM_JOBS=`wc -l input.fofn |awk '{print $1}'`
 
+if [ ! -s $prefix.xml ]; then
+   echo "Error: failure in previous step"
+   exit 1
+fi
+
 echo "Cleaning up"
 for f in `ls $prefix.[0-9]*aln.bam`; do
    jobnum=`basename $f |sed s/$prefix.//g |sed s/.aln.bam//g`
