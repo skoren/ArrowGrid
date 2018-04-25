@@ -52,6 +52,14 @@ if [ $NUM_CTG -lt $NUM_JOBS ]; then
    NUM_JOBS=$NUM_CTG
 fi
 
+# check for failures in mapping
+for f in `ls $prefix.[0-9]*.aln.bam`; do
+   if [ ! -s $f ]; then
+       echo "Error: file $f is empty, check output from mapping step"
+       exit 1
+   fi
+done
+
 echo "Cleaning up"
 rm -f $prefix.filtered.$jobid*
 rm -rf tmpdir
