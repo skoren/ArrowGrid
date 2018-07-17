@@ -4,9 +4,13 @@ The distribution is a parallel wrapper around the [Arrow](http://github.com/Paci
 
 The current pipeline has been designed to run on the SGE or SLURM scheduling systems and has hard-coded grid resource request parameters. You must edit arrow.sh to match your grid options. It is, in principle, possible to run on other grid engines but will require editing all shell scripts to not use SGE_TASK_ID but the appropriate variable for your grid environment and editing the qsub commands in arrow.sh to the appropriate commands for your grid environment.
 
+This branch doesn't run BLASR but instead uses minimap2 + pbbamify to make arrow-compatible bam files. This allows much faster alignment and user of references >4gb. However, we've done limited testing to date so the final consensus quality many not be as high as with BLASR.
+
 To run the pipeline you need to:
 
 1. You must have a working SMRT Analysis Software installation and have it configured so the tools are in your path.
+
+2. You must have minimap2, pbbamify (from [pbbam](https://github.com/PacificBiosciences/pbbam) package), and samtools in your path.
 
 2. Create the input.fofn file which lists the SMRTcells you want to use for Arrow (the full path excluding .[1-3].bax.h5 or subreads.bam), it will treat each collection of bax.h5 files as a single SMRTcell and will convert them to BAM prior to processing.
 
