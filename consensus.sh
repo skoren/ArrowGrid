@@ -59,6 +59,7 @@ fi
 if [ x$baseid = x -o x$baseid = xundefined -o x$baseid = x0 ]; then
   baseid=$1
   offset=0
+  cores=`grep -c ^processor /proc/cpuinfo`
 fi
 
 if [ x$offset = x ]; then
