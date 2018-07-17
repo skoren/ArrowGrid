@@ -103,3 +103,5 @@ if [ $IS_BAM -eq 0 ]; then
    # removing converted bam file
    rm -f $line
 fi
+
+rm -f $jobid.fastq.gz
