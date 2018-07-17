@@ -4,7 +4,7 @@ The distribution is a parallel wrapper around the [Arrow](http://github.com/Paci
 
 The current pipeline has been designed to run on the SGE or SLURM scheduling systems and has hard-coded grid resource request parameters. You must edit arrow.sh to match your grid options. It is, in principle, possible to run on other grid engines but will require editing all shell scripts to not use SGE_TASK_ID but the appropriate variable for your grid environment and editing the qsub commands in arrow.sh to the appropriate commands for your grid environment.
 
-This branch doesn't run BLASR but instead uses minimap2 + pbbamify to make arrow-compatible bam files. This allows much faster alignment and user of references >4gb. However, we've done limited testing to date so the final consensus quality many not be as high as with BLASR.
+This branch doesn't run BLASR but instead uses minimap2 + pbbamify to make arrow-compatible bam files. This allows much faster alignment and use of references >4gb. However, we've done limited testing to date so the final consensus quality many not be as high as with BLASR.
 
 To run the pipeline you need to:
 
