@@ -93,8 +93,10 @@ if [ $IS_BAM -eq 0 ]; then
 fi
 
 echo "Mapping $prefix $line to $reference"
-mkdir -p tmpdir
-pbalign --tmpDir=`pwd`/tmpdir --minAccuracy=0.75 --minLength=50 --minAnchorSize=12 --maxDivergence=30 --concordant --algorithm=blasr --algorithmOptions=--useQuality --maxHits=1 --hitPolicy=random --seed=1 --nproc=8 $line $reference $prefix.$jobid.aln.bam 
+
+samtools bam2fq -n $line |gzip -c > $jobid.fastq.gz
+minimap2 -ax map-pb   -t 8--secondary=no $prefix.mmi $jobid.fastq.gz |samtools view -bT $reference - | samtools sort -T $jobid.tmp -o $jobid.minimap.bam -
+pbbamify --input=$jobid.minimap.bam --output $prefix.$jobid.aln.bam $reference $line
 bamtools stats -in $prefix.$jobid.aln.bam
 
 if [ $IS_BAM -eq 0 ]; then

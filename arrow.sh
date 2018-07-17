@@ -56,6 +56,10 @@ if [ $# -ge 4 ] && [ x$4 != "x" ]; then
    cat filterfofn |awk -v P=$PREFIX -v PWD=`pwd` '{print PWD"/seq/"P"."NR".filtered.bam"}' > $FOFN
 fi
 
+# index the assembly
+minimap2 -ax map-pb -d $PREFIX.mmi $REFERENCE
+samtools faidx $REFERENCE
+
 if [ $USEGRID -eq 1 ]; then
    if [ $GRID == "SGE" ]; then
       hold=""
