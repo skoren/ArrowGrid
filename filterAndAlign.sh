@@ -50,9 +50,11 @@ GRID=`cat $CONFIG |grep -v "#" |grep  GRIDENGINE |tail -n 1 |awk '{print $2}'`
 if [ $GRID == "SGE" ]; then
    baseid=$SGE_TASK_ID
    offset=$1
+   cores=$NSLOTS
 elif [ $GRID == "SLURM" ]; then
    baseid=$SLURM_ARRAY_TASK_ID
    offset=$1
+   cores=$SLURM_CPUS_PER_TASK
 fi
 
 if [ x$baseid = x -o x$baseid = xundefined -o x$baseid = x0 ]; then
@@ -95,7 +97,7 @@ fi
 echo "Mapping $prefix $line to $reference"
 
 samtools bam2fq -n $line |gzip -c > $jobid.fastq.gz
-minimap2 -ax map-pb   -t 8--secondary=no $prefix.mmi $jobid.fastq.gz |samtools view -bT $reference - | samtools sort -T $jobid.tmp -o $jobid.minimap.bam -
+minimap2 -ax map-pb   -t $cores --secondary=no $prefix.mmi $jobid.fastq.gz |samtools view -bT $reference - | samtools sort -T $jobid.tmp -o $jobid.minimap.bam -
 pbbamify --input=$jobid.minimap.bam --output $prefix.$jobid.aln.bam $reference $line
 bamtools stats -in $prefix.$jobid.aln.bam
 

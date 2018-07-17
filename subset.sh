@@ -50,9 +50,11 @@ GRID=`cat $CONFIG |grep -v "#" |grep  GRIDENGINE |tail -n 1 |awk '{print $2}'`
 if [ $GRID == "SGE" ]; then
    baseid=$SGE_TASK_ID
    offset=$1
+   cores=$NSLOTS
 elif [ $GRID == "SLURM" ]; then
    baseid=$SLURM_ARRAY_TASK_ID
    offset=$1
+   cores=$SLURM_CPUS_PER_TASK
 fi
 
 if [ x$baseid = x -o x$baseid = xundefined -o x$baseid = x0 ]; then
@@ -111,7 +113,7 @@ for file in `ls $jobid.split.*`; do
 done
 
 # now we create the subsets in parallel
-ls $jobid.split.* |awk -F "." '{print $NF}' |parallel --tmpdir `pwd` -P 8 dataset --log-file $jobid.{1}.log consolidate $jobid.{1}.filter.xml $jobid.{1}.filtered.bam $jobid.{1}.final.xml
+ls $jobid.split.* |awk -F "." '{print $NF}' |parallel --tmpdir `pwd` -P $cores dataset --log-file $jobid.{1}.log consolidate $jobid.{1}.filter.xml $jobid.{1}.filtered.bam $jobid.{1}.final.xml
 
 # and merge
 dataset create $jobid.filtered.xml $jobid.*.filtered.bam

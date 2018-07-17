@@ -49,9 +49,11 @@ GRID=`cat $CONFIG |grep -v "#" |grep  GRIDENGINE |tail -n 1 |awk '{print $2}'`
 if [ $GRID == "SGE" ]; then
    baseid=$SGE_TASK_ID
    offset=$1
+   cores=$NSLOTS
 elif [ $GRID == "SLURM" ]; then
    baseid=$SLURM_ARRAY_TASK_ID
    offset=$1
+   cores=$SLURM_CPUS_PER_TASK
 fi
 
 if [ x$baseid = x -o x$baseid = xundefined -o x$baseid = x0 ]; then
@@ -101,4 +103,4 @@ if [ -e "$prefix.$jobid.fasta" ]; then
 fi
 
 # do we want to instantiate partitioned bam here or not?
-variantCaller --skipUnrecognizedContigs $DIPLOID -x 5 -q 20 -X120 -v -j8 --algorithm=$ALGORITHM -r $asm -o $prefix.$jobid.gff -o $prefix.$jobid.fastq -o $prefix.$jobid.fasta $chunk
+variantCaller --skipUnrecognizedContigs $DIPLOID -x 5 -q 20 -X120 -v -j $cores --algorithm=$ALGORITHM -r $asm -o $prefix.$jobid.gff -o $prefix.$jobid.fastq -o $prefix.$jobid.fasta $chunk
