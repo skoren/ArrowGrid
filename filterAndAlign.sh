@@ -50,9 +50,11 @@ GRID=`cat $CONFIG |grep -v "#" |grep  GRIDENGINE |tail -n 1 |awk '{print $2}'`
 if [ $GRID == "SGE" ]; then
    baseid=$SGE_TASK_ID
    offset=$1
+   cores=$NSLOTS
 elif [ $GRID == "SLURM" ]; then
    baseid=$SLURM_ARRAY_TASK_ID
    offset=$1
+   cores=$SLURM_CPUS_PER_TASK
 fi
 
 if [ x$baseid = x -o x$baseid = xundefined -o x$baseid = x0 ]; then
@@ -94,7 +96,7 @@ fi
 
 echo "Mapping $prefix $line to $reference"
 mkdir -p tmpdir
-pbalign --tmpDir=`pwd`/tmpdir --minAccuracy=0.75 --minLength=50 --minAnchorSize=12 --maxDivergence=30 --concordant --algorithm=blasr --algorithmOptions=--useQuality --maxHits=1 --hitPolicy=random --seed=1 --nproc=8 $line $reference $prefix.$jobid.aln.bam 
+pbalign --tmpDir=`pwd`/tmpdir --minAccuracy=0.75 --minLength=50 --minAnchorSize=12 --maxDivergence=30 --concordant --algorithm=blasr --algorithmOptions=--useQuality --maxHits=1 --hitPolicy=random --seed=1 --nproc=$cores $line $reference $prefix.$jobid.aln.bam 
 bamtools stats -in $prefix.$jobid.aln.bam
 
 if [ $IS_BAM -eq 0 ]; then
