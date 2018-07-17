@@ -105,3 +105,4 @@ if [ $IS_BAM -eq 0 ]; then
 fi
 
 rm -f $jobid.fastq.gz
+rm -f $jobid.minimap.bam
