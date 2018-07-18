@@ -98,8 +98,10 @@ fi
 echo "Mapping $prefix $line to $reference"
 
 samtools bam2fq -n $line |gzip -c > $jobid.fastq.gz
-minimap2 -ax map-pb   -t $cores --secondary=no $prefix.mmi $jobid.fastq.gz |samtools view -bT $reference - | samtools sort -T $jobid.tmp -o $jobid.minimap.bam -
-pbbamify --input=$jobid.minimap.bam --output $prefix.$jobid.aln.bam $reference $line
+minimap2 -ax map-pb   -t $cores --secondary=no $prefix.mmi $jobid.fastq.gz |samtools view -bT $reference - |  samtools view -F 0x04 - > $jobid.minimap.bam
+pbbamify --input=$jobid.minimap.bam --output $prefix.$jobid.unsorted.bam $reference $line
+samtools sort -m 4G -@ $cores -T ./$jobid.tmp $prefix.$jobid.aln.bam $prefix.$jobid.unsorted.bam
+pbindex $prefix.$jobid.aln.bam
 bamtools stats -in $prefix.$jobid.aln.bam
 
 if [ $IS_BAM -eq 0 ]; then
@@ -109,3 +111,4 @@ fi
 
 rm -f $jobid.fastq.gz
 rm -f $jobid.minimap.bam
+rm -f $prefix.$jobid.unsorted.bam
