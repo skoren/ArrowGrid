@@ -98,9 +98,14 @@ chunk="$prefix.chunk$chunk.xml"
 echo "Running with $prefix $asm on $chunk"
 echo "$ALGORITHM $SCRIPT_PATH $DIPLOID"
 
-if [ -e "$prefix.$jobid.fasta" ]; then
+if [ -s "$prefix.$jobid.fasta" ]; then
    echo "Already done!"
    exit
+else
+   # not complete, remove any outputs (if they exist)
+   rm -f $prefix.$jobid.fasta
+   rm -f $prefix.$jobid.fastq
+   rm -f $prefix.$jobid.gff
 fi
 
 # do we want to instantiate partitioned bam here or not?
