@@ -56,10 +56,6 @@ if [ $# -ge 4 ] && [ x$4 != "x" ]; then
    cat filterfofn |awk -v P=$PREFIX -v PWD=`pwd` '{print PWD"/seq/"P"."NR".filtered.bam"}' > $FOFN
 fi
 
-# index the assembly
-minimap2 -ax map-pb -d $PREFIX.mmi $REFERENCE
-samtools faidx $REFERENCE
-
 if [ $USEGRID -eq 1 ]; then
    if [ $GRID == "SGE" ]; then
       hold=""
@@ -67,7 +63,8 @@ if [ $USEGRID -eq 1 ]; then
           qsub -V -pe thread 8 -tc 50 -l mem_free=1G -t 1-$NUM_JOBS -cwd -N "${PREFIX}subset" -j y -o `pwd`/\$TASK_ID.subset.out $SCRIPT_PATH/subset.sh
           hold=" -hold_jid ${PREFIX}subset "
       fi 
-      qsub -V -pe thread 8 -tc 50 -l mem_free=5G -t 1-$NUM_JOBS $hold -cwd -N "${PREFIX}align" -j y -o `pwd`/\$TASK_ID.out $SCRIPT_PATH/filterAndAlign.sh
+      qsub -V -pe thread 1 -l mem_free=5G  $hold -cwd -N "${PREFIX}index" -j y -o `pwd`/index.out $SCRIPT_PATH/index.sh
+      qsub -V -pe thread 8 -tc 50 -l mem_free=5G -t 1-$NUM_JOBS -hold_jid "${PREFIX}index" -cwd -N "${PREFIX}align" -j y -o `pwd`/\$TASK_ID.out $SCRIPT_PATH/filterAndAlign.sh
       qsub -V -pe thread 1 -l mem_free=5G -hold_jid "${PREFIX}align" -cwd -N "${PREFIX}split" -j y -o `pwd`/split.out $SCRIPT_PATH/splitByContig.sh
       qsub -V -pe thread 8 -l mem_free=5G -tc 50 -t 1-$NUM_JOBS -hold_jid "${PREFIX}split" -cwd -N "${PREFIX}cns" -j y -o `pwd`/\$TASK_ID.cns.out $SCRIPT_PATH/consensus.sh
       #qsub -V -pe thread 1 -l mem_free=5G -tc 400 -hold_jid "${PREFIX}split" -t 1-$NUM_JOBS -cwd -N "${PREFIX}cov" -j y -o `pwd`/\$TASK_ID.cov.out $SCRIPT_PATH/coverage.sh
@@ -94,7 +91,12 @@ if [ $USEGRID -eq 1 ]; then
          echo "Submitted filter array job $job"
       fi
 
-      command="sbatch -J ${PREFIX}align -D `pwd` --cpus-per-task=8 --mem-per-cpu=5g -o `pwd`/%A_%a.out --time=72:00:00 $job"
+      # index
+      sbatch -J ${PREFIX}index -D `pwd` --cpus-per-task=1 --mem-per-cpu=5g -o `pwd`/index.out --time 72:00:00 $job $SCRIPT_PATH/index.sh > index.submit.out 2>&1
+      job=`cat index.submit.out | awk '{print "afterany:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
+      echo "Submitted index job $job"
+
+      command="sbatch -J ${PREFIX}align -D `pwd` --cpus-per-task=8 --mem-per-cpu=5g -o `pwd`/%A_%a.out --time=72:00:00 --depend=$job"
       > filter.submit.out
       for offset in `seq 0 $maxarray $NUM_JOBS`; do 
          e=$maxarray
@@ -129,6 +131,7 @@ if [ $USEGRID -eq 1 ]; then
       exit
    fi
 else
+   sh $SCRIPT_PATH/index.sh
    echo "Generating alignments"
    for i in `seq 1 $NUM_JOBS`; do
       sh $SCRIPT_PATH/filterAndAlign.sh $i
