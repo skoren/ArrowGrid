@@ -80,6 +80,16 @@ line=`cat input.fofn |head -n $jobid |tail -n 1`
 prefix=`cat prefix`
 reference=`cat asm`
 
+if [ ! -s $prefix.mmi ]; then
+   echo "Error: no index found"
+   exit
+fi
+
+if [ ! -s $reference.fai ]; then
+   echo "Error: no index found"
+   exit
+fi
+
 if [ -e $prefix.$jobid.aln.bam.pbi ]; then
    echo "Already done"
    exit
