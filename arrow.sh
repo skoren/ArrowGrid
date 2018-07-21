@@ -119,7 +119,7 @@ if [ $USEGRID -eq 1 ]; then
           if [ $m -gt $NUM_JOBS ]; then
              e=`expr $NUM_JOBS - $offset`
          fi
-         sbatch -J ${PREFIX}cns -D `pwd` --cpus-per-task=32 --mem-per-cpu=4g --depend=$job --time=3-0 -a 1-$e -o `pwd`/%A_%a.cns.out $SCRIPT_PATH/consensus.sh $offset >> cns.submit.out 2>&1
+         sbatch -J ${PREFIX}cns -D `pwd` --cpus-per-task=32 --mem-per-cpu=3g --depend=$job --time=3-0 -a 1-$e -o `pwd`/%A_%a.cns.out $SCRIPT_PATH/consensus.sh $offset >> cns.submit.out 2>&1
       done
       job=`cat cns.submit.out |awk '{print "afterok:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
       echo "Submitted consensus array $Job"
