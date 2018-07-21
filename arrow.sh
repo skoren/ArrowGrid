@@ -86,17 +86,17 @@ if [ $USEGRID -eq 1 ]; then
            fi
            $command -a 1-$e -o `pwd`/%A_%a.subset.out $SCRIPT_PATH/subset.sh $offset >> subset.submit.out 2>&1
          done
-         job=`cat subset.submit.out |awk '{print "afterany:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
+         job=`cat subset.submit.out |awk '{print "afterok:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
          job=" --depend=$job "
          echo "Submitted filter array job $job"
       fi
 
       # index
       sbatch -J ${PREFIX}index -D `pwd` --cpus-per-task=1 --mem=30g -o `pwd`/index.out --time 72:00:00 $job $SCRIPT_PATH/index.sh > index.submit.out 2>&1
-      job=`cat index.submit.out | awk '{print "afterany:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
+      job=`cat index.submit.out | awk '{print "afterok:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
       echo "Submitted index job $job"
 
-      command="sbatch -J ${PREFIX}align -D `pwd` --cpus-per-task=8 --mem-per-cpu=5g -o `pwd`/%A_%a.out --time=72:00:00 --depend=$job"
+      command="sbatch -J ${PREFIX}align -D `pwd` --cpus-per-task=16 --mem-per-cpu=5g -o `pwd`/%A_%a.out --time=3-0 --depend=$job"
       > filter.submit.out
       for offset in `seq 0 $maxarray $NUM_JOBS`; do 
          e=$maxarray
@@ -106,10 +106,10 @@ if [ $USEGRID -eq 1 ]; then
         fi
         $command -a 1-$e -o `pwd`/%A_%a.out $SCRIPT_PATH/filterAndAlign.sh $offset >> filter.submit.out 2>&1
       done
-      job=`cat filter.submit.out |awk '{print "afterany:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
+      job=`cat filter.submit.out |awk '{print "afterok:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
       echo "Submitted filter array job $job"
       sbatch -J ${PREFIX}split -D `pwd` --cpus-per-task=1 --mem-per-cpu=5g --depend=$job -o `pwd`/split.out $SCRIPT_PATH/splitByContig.sh > split.submit.out 2>&1
-      job=`cat split.submit.out |awk '{print "afterany:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
+      job=`cat split.submit.out |awk '{print "afterok:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
       echo "Submitted split job $job"
 
       > cns.submit.out
@@ -119,12 +119,12 @@ if [ $USEGRID -eq 1 ]; then
           if [ $m -gt $NUM_JOBS ]; then
              e=`expr $NUM_JOBS - $offset`
          fi
-         sbatch -J ${PREFIX}cns -D `pwd` --cpus-per-task=8 --mem-per-cpu=5g --depend=$job --time=72:00:00 -a 1-$e -o `pwd`/%A_%a.cns.out $SCRIPT_PATH/consensus.sh $offset >> cns.submit.out 2>&1
+         sbatch -J ${PREFIX}cns -D `pwd` --cpus-per-task=32 --mem-per-cpu=4g --depend=$job --time=3-0 -a 1-$e -o `pwd`/%A_%a.cns.out $SCRIPT_PATH/consensus.sh $offset >> cns.submit.out 2>&1
       done
-      job=`cat cns.submit.out |awk '{print "afterany:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
+      job=`cat cns.submit.out |awk '{print "afterok:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
       echo "Submitted consensus array $Job"
       sbatch -J ${PREFIX}merge -D `pwd` --cpus-per-task=1 --mem-per-cpu=5g --depend=$job -o `pwd`/merge.out $SCRIPT_PATH/merge.sh > merge.submit.out 2>&1
-      job=`cat merge.submit.out |awk '{print "afterany:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
+      job=`cat merge.submit.out |awk '{print "afterok:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
       echo "Submitted merge job $job"
    else
       echo "Error: unknown grid engine specified $GRID, currently supported are SGE or SLURM"
