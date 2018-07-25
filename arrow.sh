@@ -46,7 +46,7 @@ echo "$SCRIPT_PATH" > scripts
 echo "$ALGORITHM" > alg
 
 #get reference size, it seems the consensus module ends up with a copy of the full assembly in each thread
-ASM_SIZE=`ls -laL $REFERENCE |awk '{print int($5/1000/1000/1000)+1}'`
+ASM_SIZE=`ls -laL $REFERENCE |awk '{print int($5/1000/1000/1000)+1}' |awk '{print int($1*1.3)+1}'`
 
 echo "Running with $PREFIX $REFERENCE $HOLD_ID"
 USEGRID=`cat $CONFIG |grep -v "#" |grep USEGRID |awk '{print $NF}'`
