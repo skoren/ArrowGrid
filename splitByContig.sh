@@ -53,8 +53,8 @@ if [ $NUM_CTG -lt $NUM_JOBS ]; then
 fi
 
 # check for failures in mapping
-for f in `ls $prefix.[0-9]*.aln.bam`; do
-   if [ ! -s $f ]; then
+for f in `seq 1 $NUM_JOBS`; do
+   if [ ! -s $prefix.$f.aln.bam ]; then
        echo "Error: file $f is empty, check output from mapping step"
        exit 1
    fi
