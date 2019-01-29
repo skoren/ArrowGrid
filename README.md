@@ -8,7 +8,7 @@ To run the pipeline you need to:
 
 1. You must have a working SMRT Analysis Software installation and have it configured so the tools are in your path.
 
-2. Create the input.fofn file which lists the SMRTcells you want to use for Arrow (the full path excluding .[1-3].bax.h5 or subreads.bam), it will treat each collection of bax.h5 files as a single SMRTcell and will convert them to BAM prior to processing.
+2. Create the input.fofn file which lists the SMRTcells you want to use for Arrow. For h5 files, specify the full path (excluding .[1-3].bax.h5) which are all treated as a single SMRTcell. For BAM files, specify the full path (including subreads.bam).
 
 3. run the pipeline specifying the input file, the path to the reference fasta, and a prefix for the outputs:
 
