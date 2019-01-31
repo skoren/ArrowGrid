@@ -12,9 +12,9 @@ To run the pipeline you need to:
 
 2. You must have minimap2, pbbamify (from [pbbam](https://github.com/PacificBiosciences/pbbam) package), and samtools in your path.
 
-2. Create the input.fofn file which lists the SMRTcells you want to use for Arrow (the full path excluding .[1-3].bax.h5 or subreads.bam), it will treat each collection of bax.h5 files as a single SMRTcell and will convert them to BAM prior to processing.
+3. Create the input.fofn file which lists the SMRTcells you want to use for Arrow. For h5 files, specify the full path (excluding .[1-3].bax.h5) which are all treated as a single SMRTcell. For BAM files, specify the full path (including subreads.bam).
 
-3. run the pipeline specifying the input file, the path to the reference fasta, and a prefix for the outputs:
+4. run the pipeline specifying the input file, a prefix for the outputs, and the path to the reference fasta. Optionally you can also specify a path to a Canu seqStore readNames.txt file if you used trio binning and want to only use classified reads for polishing.
 
 ```
 sh arrow.sh input.fofn trio3 trio3.contigs.fasta
