@@ -46,7 +46,8 @@ fi
 
 prefix=`cat prefix`
 asm=`cat asm`
-NUM_JOBS=`wc -l input.fofn |awk '{print $1}'`
+fofn=`cat fofn`
+NUM_JOBS=`wc -l $fofn |awk '{print $1}'`
 NUM_CTG=`grep -c ">" $asm`
 if [ $NUM_CTG -lt $NUM_JOBS ]; then
    NUM_JOBS=$NUM_CTG

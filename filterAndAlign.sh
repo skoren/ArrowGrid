@@ -76,7 +76,8 @@ fi
 
 echo Running job $jobid based on command line options.
 
-line=`cat input.fofn |head -n $jobid |tail -n 1`
+fofn=`cat fofn`
+line=`cat $fofn |head -n $jobid |tail -n 1`
 prefix=`cat prefix`
 reference=`cat asm`
 

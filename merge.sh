@@ -47,7 +47,8 @@ fi
 prefix=`cat prefix`
 asm=`cat asm`
 ALGORITHM=`cat alg`
-NUM_JOBS=`wc -l input.fofn |awk '{print $1}'`
+fofn=`cat fofn`
+NUM_JOBS=`wc -l $fofn |awk '{print $1}'`
 
 if [ ! -s $prefix.xml ]; then
    echo "Error: failure in previous step"
