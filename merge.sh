@@ -55,24 +55,38 @@ if [ ! -s $prefix.xml ]; then
    exit 1
 fi
 
-echo "Cleaning up"
-for f in `ls $prefix.[0-9]*aln.bam`; do
+# make two passes, first pass will just make sure everything is OK and exit if any jobs failed
+# second pass will do the cleanup since we don't want to clean up anything if at least one job failed
+echo "Checking success"
+for f in `seq 1 $NUM_JOBS`; do
    jobnum=`basename $f |sed s/$prefix.//g |sed s/.aln.bam//g`
    IS_OK=`cat *$jobnum.cns.out |grep -c Finished`
    IS_OUT_OF_BOUNDS=`cat *$jobnum.cns.out |grep -c "invalid job id"`
    if [ $IS_OK -ge 1 ]; then
       echo "$jobnum is OK"
-      rm -f $f
-      rm -f $f.pbi
-      rm -f $f.bai
    elif [ $IS_OUT_OF_BOUNDS -ge 1 ]; then
       echo "$jobnum is out of bounds, which is OK"
-      rm -f $f
-      rm -f $f.pbi
-      rm -f $f.bai
    else
       echo "Error: $jobnum failed, please check $jobnum.cns.out for errors and try again"
       exit
+   fi
+done
+
+echo "Cleaning up"
+for f in `seq 1 $NUM_JOBS`; do
+   jobnum=`basename $f |sed s/$prefix.//g |sed s/.aln.bam//g`
+   IS_OK=`cat *$jobnum.cns.out |grep -c Finished`
+   IS_OUT_OF_BOUNDS=`cat *$jobnum.cns.out |grep -c "invalid job id"`
+   if [ $IS_OK -ge 1 ]; then
+      echo "$jobnum is OK"
+      rm -f $prefix.$f.aln.bam
+      rm -f $prefix.$f.aln.bam.pbi
+      rm -f $prefix.$f.aln.bambai
+   elif [ $IS_OUT_OF_BOUNDS -ge 1 ]; then
+      echo "$jobnum is out of bounds, which is OK"
+      rm -f $prefix.$f.aln.bam
+      rm -f $prefix.$f.aln.bam.pbi
+      rm -f $prefix.$f.aln.bam.bai
    fi
 done
 
