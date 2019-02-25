@@ -114,11 +114,11 @@ for file in `ls $jobid.split.*`; do
 done
 
 # now we create the subsets in parallel
-ls $jobid.split.* |awk -F "." '{print $NF}' |parallel --tmpdir `pwd` -P $cores dataset --log-file $jobid.{1}.log consolidate $jobid.{1}.filter.xml $jobid.{1}.filtered.bam $jobid.{1}.final.xml
+ls $jobid.split.* |awk -F "." '{print $NF}' |parallel --tmpdir `pwd` -P $cores dataset --log-file $jobid.{1}.log consolidate --noTmp $jobid.{1}.filter.xml $jobid.{1}.filtered.bam $jobid.{1}.final.xml
 
 # and merge
 dataset create $jobid.filtered.xml $jobid.*.filtered.bam
-dataset consolidate $jobid.filtered.xml seq/$prefix.$jobid.filtered.bam  seq/$prefix.$jobid.filtered.xml
+dataset consolidate --noTmp $jobid.filtered.xml seq/$prefix.$jobid.filtered.bam  seq/$prefix.$jobid.filtered.xml
 
 #clean up
 rm -f $jobid.xml
