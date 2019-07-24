@@ -48,7 +48,7 @@ echo "$ALGORITHM" > alg
 echo "Running with $PREFIX $REFERENCE $HOLD_ID"
 USEGRID=`cat $CONFIG |grep -v "#" |grep USEGRID |awk '{print $NF}'`
 GRID=`cat $CONFIG |grep -v "#" |grep  GRIDENGINE |tail -n 1 |awk '{print $2}'`
-GRIDQ=`cat $CONFIG |grep -v "#" |grep  GRIDQUEUE |tail -n 1 |awk '{print $2}'`
+GRIDOPTS=$(cat $CONFIG |grep -v "#" |grep  GRIDOPTS |tail -n 1 | sed 's/GRIDOPTS //')
 
 if [ $# -ge 4 ] && [ x$4 != "x" ]; then
    echo "$4" > whitelist
@@ -84,22 +84,22 @@ if [ $USEGRID -eq 1 ]; then
       hold=""
       if [ $# -ge 4 ] && [ x$4 != "x" ]; then
           #qsub -V -pe thread 8 -tc 50 -l mem_free=1G -t 1-$NUM_JOBS -cwd -N "${PREFIX}subset" -j y -o `pwd`/\$TASK_ID.subset.out $SCRIPT_PATH/subset.sh
-          bsub -M 8000000 -R 'rusage[mem=8000]' -J "${PREFIX}subset[1-${NUM_JOBS}]" -n 8 -oo '%I.subset.out' -q "${GRIDQUEUE}" $SCRIPT_PATH/subset.sh
+          bsub -M 8000000 -R 'rusage[mem=8000]' -J "${PREFIX}subset[1-${NUM_JOBS}]" -n 8 -oo '%I.subset.out' "${GRIDOPTS}" $SCRIPT_PATH/subset.sh
 
           #hold=" -hold_jid ${PREFIX}subset "
           hold=" -w ${PREFIX}subset "
       fi
       #qsub -V -pe thread 8 -tc 50 -l mem_free=5G -t 1-$NUM_JOBS $hold -cwd -N "${PREFIX}align" -j y -o `pwd`/\$TASK_ID.out $SCRIPT_PATH/filterAndAlign.sh
-      bsub -M 8000000 -R 'rusage[mem=8000]' -J "${PREFIX}align[1-${NUM_JOBS}]" -n 8 "${hold}" -oo '%I.out' -q "${GRIDQUEUE}" "${SCRIPT_PATH}/filterAndAlign.sh"
+      bsub -M 8000000 -R 'rusage[mem=8000]' -J "${PREFIX}align[1-${NUM_JOBS}]" -n 8 "${hold}" -oo '%I.out' "${GRIDOPTS}" "${SCRIPT_PATH}/filterAndAlign.sh"
 
       #qsub -V -pe thread 1 -l mem_free=5G -hold_jid "${PREFIX}align" -cwd -N "${PREFIX}split" -j y -o `pwd`/split.out $SCRIPT_PATH/splitByContig.sh
-      bsub -M 8000000 -R 'rusage[mem=8000]' -J "${PREFIX}split" -n 1 -w "${PREFIX}align" -oo split.out "${SCRIPT_PATH}/splitByContig.sh"
+      bsub -M 8000000 -R 'rusage[mem=8000]' -J "${PREFIX}split" -n 1 -w "${PREFIX}align" -oo split.out "${GRIDOPTS}" "${SCRIPT_PATH}/splitByContig.sh"
 
       #qsub -V -pe thread 8 -l mem_free=5G -tc 50 -t 1-$NUM_JOBS -hold_jid "${PREFIX}split" -cwd -N "${PREFIX}cns" -j y -o `pwd`/\$TASK_ID.cns.out $SCRIPT_PATH/consensus.sh
-      bsub -M 8000000 -R 'rusage[mem=8000]' -J "${PREFIX}cns[1-${NUM_JOBS}]" -n 8 -w "${PREFIX}split" -oo '%I.cns.out' -q "${GRIDQ}" "${SCRIPT_PATH}/consensus.sh"
+      bsub -M 8000000 -R 'rusage[mem=8000]' -J "${PREFIX}cns[1-${NUM_JOBS}]" -n 8 -w "${PREFIX}split" -oo '%I.cns.out' "${GRIDOPTS}" "${SCRIPT_PATH}/consensus.sh"
 
       #qsub -V -pe thread 1 -l mem_free=5G -hold_jid "${PREFIX}cns" -cwd -N "${PREFIX}merge" -j y -o `pwd`/merge.out $SCRIPT_PATH/merge.sh
-      bsub -M 8000000 -R 'rusage[mem=8000]' -J "${PREFIX}merge" -n 1 -w "${PREFIX}cns" -oo merge.out "${SCRIPT_PATH}/merge.sh"
+      bsub -M 8000000 -R 'rusage[mem=8000]' -J "${PREFIX}merge" -n 1 -w "${PREFIX}cns" -oo merge.out "${GRIDOPTS}" "${SCRIPT_PATH}/merge.sh"
 
    elif [ $GRID == "SLURM" ]; then
       # get batch limits
