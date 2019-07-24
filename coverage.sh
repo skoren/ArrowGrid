@@ -44,6 +44,10 @@ GRID=`cat $CONFIG |grep -v "#" |grep  GRIDENGINE |tail -n 1 |awk '{print $2}'`
 if [ $GRID == "SGE" ]; then
    baseid=$SGE_TASK_ID
    offset=$1
+elif [ $GRID == "LSF" ]; then
+   baseid=$LSB_JOBID
+   offset=$1
+   cores=$LSB_BIND_CPU_LIST
 elif [ $GRID == "SLURM" ]; then
    baseid=$SLURM_ARRAY_TASK_ID
    offset=$1
