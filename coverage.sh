@@ -45,9 +45,10 @@ if [ $GRID == "SGE" ]; then
    baseid=$SGE_TASK_ID
    offset=$1
 elif [ $GRID == "LSF" ]; then
-   baseid=$LSB_JOBID
+   baseid=$LSB_JOBINDEX
    offset=$1
-   cores=$LSB_BIND_CPU_LIST
+   #LSB_MCPU_HOSTS=blade18-1-2.gsc.wustl.edu 8
+   cores=$(echo ${LSB_MCPU_HOSTS} | awk '{print $2}')
 elif [ $GRID == "SLURM" ]; then
    baseid=$SLURM_ARRAY_TASK_ID
    offset=$1
