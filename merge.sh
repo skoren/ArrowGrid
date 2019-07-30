@@ -49,6 +49,7 @@ asm=`cat asm`
 ALGORITHM=`cat alg`
 fofn=`cat fofn`
 NUM_JOBS=`wc -l $fofn |awk '{print $1}'`
+GRID=`cat $CONFIG |grep -v "#" |grep  GRIDENGINE |tail -n 1 |awk '{print $2}'`
 
 if [ ! -s $prefix.xml ]; then
    echo "Error: failure in previous step"
@@ -60,8 +61,13 @@ fi
 echo "Checking success"
 for f in `seq 1 $NUM_JOBS`; do
    jobnum=`basename $f |sed s/$prefix.//g |sed s/.aln.bam//g`
-   IS_OK=`cat *$jobnum.cns.out |grep -c Finished`
-   IS_OUT_OF_BOUNDS=`cat *$jobnum.cns.out |grep -c "invalid job id"`
+   if [ $GRID == "LSF" ]; then
+       IS_OK=`cat *$jobnum.cns.out | grep -c 'Successfully completed'`
+       IS_OUT_OF_BOUNDS=0
+   else
+       IS_OK=`cat *$jobnum.cns.out |grep -c Finished`
+       IS_OUT_OF_BOUNDS=`cat *$jobnum.cns.out |grep -c "invalid job id"`
+   fi
    if [ $IS_OK -ge 1 ]; then
       echo "$jobnum is OK"
    elif [ $IS_OUT_OF_BOUNDS -ge 1 ]; then
@@ -75,8 +81,13 @@ done
 echo "Cleaning up"
 for f in `seq 1 $NUM_JOBS`; do
    jobnum=`basename $f |sed s/$prefix.//g |sed s/.aln.bam//g`
-   IS_OK=`cat *$jobnum.cns.out |grep -c Finished`
-   IS_OUT_OF_BOUNDS=`cat *$jobnum.cns.out |grep -c "invalid job id"`
+   if [ $GRID == "LSF" ]; then
+       IS_OK=`cat *$jobnum.cns.out | grep -c 'Successfully completed'`
+       IS_OUT_OF_BOUNDS=0
+   else
+       IS_OK=`cat *$jobnum.cns.out |grep -c Finished`
+       IS_OUT_OF_BOUNDS=`cat *$jobnum.cns.out |grep -c "invalid job id"`
+   fi
    if [ $IS_OK -ge 1 ]; then
       echo "$jobnum is OK"
       rm -f $prefix.$f.aln.bam
