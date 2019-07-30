@@ -21,7 +21,6 @@
 ######################################################################
 
 SCRIPT_PATH=`cat scripts`
-source ~/.profile
 
 if [ -e `pwd`/CONFIG ]; then
    CONFIG=`pwd`/CONFIG
