@@ -22,8 +22,6 @@
 
 SCRIPT_PATH=`cat scripts`
 
-source ~/.profile
-
 if [ -e `pwd`/CONFIG ]; then
    CONFIG=`pwd`/CONFIG
 else
@@ -51,6 +49,11 @@ if [ $GRID == "SGE" ]; then
    baseid=$SGE_TASK_ID
    offset=$1
    cores=$NSLOTS
+elif [ $GRID == "LSF" ]; then
+   baseid=$LSB_JOBINDEX
+   offset=$1
+   #LSB_MCPU_HOSTS=blade18-1-2.gsc.wustl.edu 8
+   cores=$(echo ${LSB_MCPU_HOSTS} | awk '{print $2}')
 elif [ $GRID == "SLURM" ]; then
    baseid=$SLURM_ARRAY_TASK_ID
    offset=$1

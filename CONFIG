@@ -3,3 +3,4 @@ ALGORITHM arrow
 LD_LIBRARY_PATH 
 USEGRID 1
 GRIDENGINE SGE
+GRIDOPTS -q research-hpc -a 'docker(halllab/arrow-grid:latest)'
