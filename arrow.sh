@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -x
+#set -x
 
 ######################################################################
 #  PUBLIC DOMAIN NOTICE
@@ -39,18 +39,15 @@ if [ -e `pwd`/CONFIG ]; then
 else
    CONFIG=${SCRIPT_PATH}/CONFIG
 fi
+. "${CONFIG}"
 
-ALGORITHM=`cat $CONFIG |grep -v "#" |grep  ALGORITHM |tail -n 1 |awk '{print $2}'`
+#ALGORITHM=`cat $CONFIG |grep -v "#" |grep  ALGORITHM |tail -n 1 |awk '{print $2}'`
 echo "$FOFN" > fofn
 echo "$PREFIX" > prefix
 echo "$REFERENCE" > asm
 echo "$SCRIPT_PATH" > scripts
 echo "$ALGORITHM" > alg
-
 echo "Running with $PREFIX $REFERENCE $HOLD_ID"
-USEGRID=`cat $CONFIG |grep -v "#" |grep USEGRID |awk '{print $NF}'`
-GRID=`cat $CONFIG |grep -v "#" |grep  GRIDENGINE |tail -n 1 |awk '{print $2}'`
-GRIDOPTS=$(cat $CONFIG |grep -v "#" |grep  GRIDOPTS |tail -n 1 | sed 's/GRIDOPTS //')
 
 if [ $# -ge 4 ] && [ x$4 != "x" ]; then
    echo "$4" > whitelist
@@ -59,7 +56,7 @@ if [ $# -ge 4 ] && [ x$4 != "x" ]; then
    cat filterfofn |awk -v P=$PREFIX -v PWD=`pwd` '{print PWD"/seq/"P"."NR".filtered.bam"}' > $FOFN
 fi
 
-if [ $USEGRID -eq 1 ]; then
+if [ ! -z "${GRID}" ]; then
    if [ $GRID == "SGE" ]; then
       hold=""
       if [ $# -ge 4 ] && [ x$4 != "x" ]; then
@@ -137,7 +134,7 @@ if [ $USEGRID -eq 1 ]; then
       job=`cat merge.submit.out |awk '{print "afterany:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
       echo "Submitted merge job $job"
    else
-      echo "Error: unknown grid engine specified $GRID, currently supported are SGE or SLURM"
+      echo "Error: unknown grid engine specified $GRID, currently supported are SGE, SLURM, or LSF"
       exit
    fi
 else
