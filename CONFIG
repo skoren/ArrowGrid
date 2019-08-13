@@ -2,3 +2,8 @@ ALGORITHM=arrow
 #LD_ADDITION
 GRID=LSF
 GRIDOPTS="-q research-hpc -a 'docker(halllab/arrow-grid:latest)'"
+GRIDOPTS_SUBSET="-M 8000000 -R 'rusage[mem=8000]' -n 2"
+GRIDOPTS_ALN="-M 32000000 -R 'rusage[mem=32000]' -n 8"
+GRIDOPTS_SPLT="-M 8000000 -R 'rusage[mem=8000]' -n 1"
+GRIDOPTS_CON="-M 32000000 -R 'rusage[mem=32000]' -n 8"
+GRIDOPTS_MRG="-M 8000000 -R 'rusage[mem=8000]' -n 1"
