@@ -70,15 +70,15 @@ if [ ! -z "${GRID}" ]; then
 
    elif [ $GRID == "LSF" ]; then
       if [ $# -ge 4 ] && [ x$4 != "x" ]; then
-          bsub -M 8000000 -R 'rusage[mem=8000]' -J "${PREFIX}subset[1-${NUM_JOBS}]" -n 2 -oo '%I.subset.out' ${GRIDOPTS} ${SCRIPT_PATH}/subset.sh
-          bsub -M 32000000 -R 'rusage[mem=32000]' -J "${PREFIX}align[1-${NUM_JOBS}]" -n 8 -w "done(${PREFIX}subset[*])" -oo '%I.out' ${GRIDOPTS} "${SCRIPT_PATH}/filterAndAlign.sh"
+          bsub -M 8000000 -R 'rusage[mem=8000]' -n 2 -J "${PREFIX}subset[1-${NUM_JOBS}]" -oo '%I.subset.out' ${GRIDOPTS} ${SCRIPT_PATH}/subset.sh
+          bsub -M 32000000 -R 'rusage[mem=32000]' -n 8 -J "${PREFIX}align[1-${NUM_JOBS}]" -w "done(${PREFIX}subset[*])" -oo '%I.out' ${GRIDOPTS} "${SCRIPT_PATH}/filterAndAlign.sh"
 
       else
-          bsub -M 32000000 -R 'rusage[mem=32000]' -J "${PREFIX}align[1-${NUM_JOBS}]" -n 8 -oo '%I.out' ${GRIDOPTS} "${SCRIPT_PATH}/filterAndAlign.sh"
+          bsub -M 32000000 -R 'rusage[mem=32000]' -n 8 -J "${PREFIX}align[1-${NUM_JOBS}]" -oo '%I.out' ${GRIDOPTS} "${SCRIPT_PATH}/filterAndAlign.sh"
       fi
-      bsub -M 8000000 -R 'rusage[mem=8000]' -J "${PREFIX}split" -n 1 -w "done(${PREFIX}align)" -oo split.out ${GRIDOPTS} "${SCRIPT_PATH}/splitByContig.sh"
-      bsub -M 32000000 -R 'rusage[mem=32000]' -J "${PREFIX}cns[1-${NUM_JOBS}]" -n 8 -w "done(${PREFIX}split)" -oo '%I.cns.out' ${GRIDOPTS} "${SCRIPT_PATH}/consensus.sh"
-      bsub -M 8000000 -R 'rusage[mem=8000]' -J "${PREFIX}merge" -n 1 -w "done(${PREFIX}cns)" -oo merge.out ${GRIDOPTS} "${SCRIPT_PATH}/merge.sh"
+      bsub -M 8000000 -R 'rusage[mem=8000]' -n 1 -J "${PREFIX}split" -w "done(${PREFIX}align)" -oo split.out ${GRIDOPTS} "${SCRIPT_PATH}/splitByContig.sh"
+      bsub -M 32000000 -R 'rusage[mem=32000]' -n 8 -J "${PREFIX}cns[1-${NUM_JOBS}]" -w "done(${PREFIX}split)" -oo '%I.cns.out' ${GRIDOPTS} "${SCRIPT_PATH}/consensus.sh"
+      bsub -M 8000000 -R 'rusage[mem=8000]' -n 1 -J "${PREFIX}merge" -w "done(${PREFIX}cns)" -oo merge.out ${GRIDOPTS} "${SCRIPT_PATH}/merge.sh"
 
    elif [ $GRID == "SLURM" ]; then
       # get batch limits
