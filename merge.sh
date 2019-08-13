@@ -27,9 +27,9 @@ if [ -e `pwd`/CONFIG ]; then
 else
    CONFIG=${SCRIPT_PATH}/CONFIG
 fi
-LD_ADDITION=`cat $CONFIG |grep -v "#"  |grep LD_LIBRARY_PATH |wc -l`
-if [ $LD_ADDITION -eq 1 ]; then
-   LD_ADDITION=`cat $CONFIG |grep -v "#" |grep LD_LIBRARY_PATH |tail -n 1 |awk '{print $NF}'`
+. "${CONFIG}"
+
+if [ ! -z "${LD_ADDITION}" ]; then
    export LD_LIBRARY_PATH=$LD_ADDITION:$LD_LIBRARY_PATH
 fi
 
@@ -47,7 +47,6 @@ asm=`cat asm`
 ALGORITHM=`cat alg`
 fofn=`cat fofn`
 NUM_JOBS=`wc -l $fofn |awk '{print $1}'`
-GRID=`cat $CONFIG |grep -v "#" |grep  GRIDENGINE |tail -n 1 |awk '{print $2}'`
 
 if [ ! -s $prefix.xml ]; then
    echo "Error: failure in previous step"

@@ -1,6 +1,4 @@
-ALGORITHM arrow
-#ALGORITHM quiver
-LD_LIBRARY_PATH 
-USEGRID 1
-GRIDENGINE SGE
-GRIDOPTS -q research-hpc -a 'docker(halllab/arrow-grid:latest)'
+ALGORITHM=arrow
+#LD_ADDITION
+GRID=LSF
+GRIDOPTS="-q research-hpc -a 'docker(halllab/arrow-grid:latest)'"

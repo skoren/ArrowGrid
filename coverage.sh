@@ -22,9 +22,14 @@
 
 SCRIPT_PATH=`cat scripts`
 
-LD_ADDITION=`cat ${SCRIPT_PATH}/CONFIG |grep -v "#"  |grep LD_LIBRARY_PATH |wc -l`
-if [ $LD_ADDITION -eq 1 ]; then
-   LD_ADDITION=`cat ${SCRIPT_PATH}/CONFIG |grep -v "#"  |grep LD_LIBRARY_PATH |tail -n 1 |awk '{print $NF}'`
+if [ -e `pwd`/CONFIG ]; then
+   CONFIG=`pwd`/CONFIG
+else
+   CONFIG=${SCRIPT_PATH}/CONFIG
+fi
+. "${CONFIG}"
+
+if [ ! -z "${LD_ADDITION}" ]; then
    export LD_LIBRARY_PATH=$LD_ADDITION:$LD_LIBRARY_PATH
 fi
 
@@ -36,8 +41,6 @@ name=`uname -n`
 if [ "$arch" = "x86_64" ] ; then
   arch="amd64"
 fi
-
-GRID=`cat $CONFIG |grep -v "#" |grep  GRIDENGINE |tail -n 1 |awk '{print $2}'`
 
 if [ $GRID == "SGE" ]; then
    baseid=$SGE_TASK_ID
