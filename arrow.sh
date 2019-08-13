@@ -41,7 +41,6 @@ else
 fi
 . "${CONFIG}"
 
-#ALGORITHM=`cat $CONFIG |grep -v "#" |grep  ALGORITHM |tail -n 1 |awk '{print $2}'`
 echo "$FOFN" > fofn
 echo "$PREFIX" > prefix
 echo "$REFERENCE" > asm
