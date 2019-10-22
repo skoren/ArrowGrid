@@ -108,5 +108,12 @@ else
    rm -f $prefix.$jobid.gff
 fi
 
-# do we want to instantiate partitioned bam here or not?
-variantCaller --skipUnrecognizedContigs $DIPLOID -x 5 -q 20 -X120 -v -j $cores --algorithm=$ALGORITHM -r $asm -o $prefix.$jobid.gff -o $prefix.$jobid.fastq -o $prefix.$jobid.fasta $chunk
+# variant called disappeared in version 8 replaced by gcpp so check which we have an use that one
+haveVC=`which variantCaller > /dev/null 2>&1 && echo 1`
+if [ "x$haveVC" == "x" ]; then
+   echo "SMRTportal8, using gcpp"
+   gcpp -x 5 -q 20 -X120 -v -j $cores --algorithm=$ALGORITHM -r $asm -o $prefix.$jobid.gff -o $prefix.$jobid.fastq -o $prefix.$jobid.fasta $chunk
+else
+   echo "SMRTportal 7 or older, using variantCaller"
+   variantCaller --skipUnrecognizedContigs $DIPLOID -x 5 -q 20 -X120 -v -j $cores --algorithm=$ALGORITHM -r $asm -o $prefix.$jobid.gff -o $prefix.$jobid.fastq -o $prefix.$jobid.fasta $chunk
+fi

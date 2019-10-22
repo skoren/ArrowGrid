@@ -99,7 +99,6 @@ fi
 echo "Mapping $prefix $line to $reference"
 mkdir -p tmpdir
 pbalign --tmpDir=`pwd`/tmpdir --minAccuracy=0.75 --minLength=50 --minAnchorSize=12 --maxDivergence=30 --concordant --algorithm=blasr --algorithmOptions=--useQuality --maxHits=1 --hitPolicy=random --seed=1 --nproc=$cores $line $reference $prefix.$jobid.aln.bam 
-bamtools stats -in $prefix.$jobid.aln.bam
 
 if [ $IS_BAM -eq 0 ]; then
    # removing converted bam file
