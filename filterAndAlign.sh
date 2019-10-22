@@ -108,18 +108,13 @@ fi
 
 echo "Mapping $prefix $line to $reference"
 
-samtools bam2fq -n $line |gzip -c > $jobid.fastq.gz
-minimap2 -ax map-pb   -t $cores --secondary=no $prefix.mmi $jobid.fastq.gz |samtools view -@ $cores -bT $reference -F 0x04 - > $jobid.minimap.bam
-pbbamify --input=$jobid.minimap.bam --output $prefix.$jobid.unsorted.bam $reference $line
+pbmm2 align $prefix.mmi $line $prefix.$jobid.unsorted.bam -j $cores
 samtools sort -m 1500M -@ $cores -T ./$jobid.tmp -o $prefix.$jobid.aln.bam $prefix.$jobid.unsorted.bam
 pbindex $prefix.$jobid.aln.bam
-bamtools stats -in $prefix.$jobid.aln.bam
 
 if [ $IS_BAM -eq 0 ]; then
    # removing converted bam file
    rm -f $line
 fi
 
-rm -f $jobid.fastq.gz
-rm -f $jobid.minimap.bam
 rm -f $prefix.$jobid.unsorted.bam
