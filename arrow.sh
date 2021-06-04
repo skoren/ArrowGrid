@@ -138,7 +138,7 @@ else
    if [ $# -ge 4 ] && [ x$4 != "x" ]; then
        echo "Subsetting files"
        for i in `seq 1 $NUM_JOBS`; do
-          sh $SCRIPT_PATH/subset.sh > $i.subset.out 2>&1
+          sh $SCRIPT_PATH/subset.sh $i > $i.subset.out 2>&1
        done
    fi
    echo "Generating alignments"
