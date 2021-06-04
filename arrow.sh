@@ -75,7 +75,7 @@ if [ $USEGRID -eq 1 ]; then
       # filter if needed
       job=""
       if [ $# -ge 4 ] && [ x$4 != "x" ]; then
-         command="sbatch -J ${PREFIX}align -D `pwd` --cpus-per-task=8 --mem-per-cpu=1g -o `pwd`/%A_%a.out --time=72:00:00"
+         command="sbatch -J ${PREFIX}subset -D `pwd` --cpus-per-task=16 --mem-per-cpu=1g -o `pwd`/%A_%a.out --time=72:00:00"
          > subset.submit.out
          for offset in `seq 0 $maxarray $NUM_JOBS`; do 
             e=$maxarray
@@ -125,19 +125,25 @@ if [ $USEGRID -eq 1 ]; then
       exit
    fi
 else
+   if [ $# -ge 4 ] && [ x$4 != "x" ]; then
+       echo "Subsetting files"
+       for i in `seq 1 $NUM_JOBS`; do
+          sh $SCRIPT_PATH/subset.sh > $i.subset.out 2>&1
+       done
+   fi
    echo "Generating alignments"
    for i in `seq 1 $NUM_JOBS`; do
-      sh $SCRIPT_PATH/filterAndAlign.sh $i
+      sh $SCRIPT_PATH/filterAndAlign.sh $i > $i.out 2>&1
    done
    echo "Splitting by contig"
-   sh $SCRIPT_PATH/splitByContig.sh
+   sh $SCRIPT_PATH/splitByContig.sh > split.out 2>&1
    echo "Computing consensus"
    for i in `seq 1 $NUM_JOBS`; do
-      sh $SCRIPT_PATH/consensus.sh $i
+      sh $SCRIPT_PATH/consensus.sh $i > $i.cns.out 2>&1
    done
    echo "Computing coverage stats"
    #for i in `seq 1 $NUM_JOBS`; do
    #   sh $SCRIPT_PATH/coverage.sh $i
    #done
-   sh $SCRIPT_PATH/merge.sh
+   sh $SCRIPT_PATH/merge.sh > merge.out 2>&1
 fi
