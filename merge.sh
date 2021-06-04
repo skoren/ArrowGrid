@@ -6,7 +6,7 @@
 #  This software is "United States Government Work" under the terms of the United
 #  States Copyright Act. It was written as part of the authors' official duties
 #  for the United States Government and thus cannot be copyrighted. This software
-#  is freely available to the public for use without a copyright
+#  is freely available to the public for use wit.cns.out a copyright
 #  notice. Restrictions cannot be placed on its present or future use.
 #
 #  Although all reasonable efforts have been taken to ensure the accuracy and
