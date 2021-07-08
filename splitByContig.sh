@@ -22,16 +22,14 @@
 
 SCRIPT_PATH=`cat scripts`
 
-source ~/.profile
 if [ -e `pwd`/CONFIG ]; then
    CONFIG=`pwd`/CONFIG
 else
    CONFIG=${SCRIPT_PATH}/CONFIG
 fi
+. "${CONFIG}"
 
-LD_ADDITION=`cat $CONFIG |grep -v "#"  |grep LD_LIBRARY_PATH |wc -l`
-if [ $LD_ADDITION -eq 1 ]; then
-   LD_ADDITION=`cat $CONFIG |grep -v "#" |grep LD_LIBRARY_PATH |tail -n 1 |awk '{print $NF}'`
+if [ ! -z "${LD_ADDITION}" ]; then
    export LD_LIBRARY_PATH=$LD_ADDITION:$LD_LIBRARY_PATH
 fi
 

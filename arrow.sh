@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+#set -x
+
 ######################################################################
 #  PUBLIC DOMAIN NOTICE
 #
@@ -37,17 +39,14 @@ if [ -e `pwd`/CONFIG ]; then
 else
    CONFIG=${SCRIPT_PATH}/CONFIG
 fi
+. "${CONFIG}"
 
-ALGORITHM=`cat $CONFIG |grep -v "#" |grep  ALGORITHM |tail -n 1 |awk '{print $2}'`
 echo "$FOFN" > fofn
 echo "$PREFIX" > prefix
 echo "$REFERENCE" > asm
 echo "$SCRIPT_PATH" > scripts
 echo "$ALGORITHM" > alg
-
 echo "Running with $PREFIX $REFERENCE $HOLD_ID"
-USEGRID=`cat $CONFIG |grep -v "#" |grep USEGRID |awk '{print $NF}'`
-GRID=`cat $CONFIG |grep -v "#" |grep  GRIDENGINE |tail -n 1 |awk '{print $2}'`
 
 if [ $# -ge 4 ] && [ x$4 != "x" ]; then
    echo "$4" > whitelist
@@ -56,7 +55,7 @@ if [ $# -ge 4 ] && [ x$4 != "x" ]; then
    cat filterfofn |awk -v P=$PREFIX -v PWD=`pwd` '{print PWD"/seq/"P"."NR".filtered.bam"}' > $FOFN
 fi
 
-if [ $USEGRID -eq 1 ]; then
+if [ ! -z "${GRID}" ]; then
    if [ $GRID == "SGE" ]; then
       hold=""
       if [ $# -ge 4 ] && [ x$4 != "x" ]; then
@@ -68,6 +67,19 @@ if [ $USEGRID -eq 1 ]; then
       qsub -V -pe thread 8 -l mem_free=5G -tc 50 -t 1-$NUM_JOBS -hold_jid "${PREFIX}split" -cwd -N "${PREFIX}cns" -j y -o `pwd`/\$TASK_ID.cns.out $SCRIPT_PATH/consensus.sh
       #qsub -V -pe thread 1 -l mem_free=5G -tc 400 -hold_jid "${PREFIX}split" -t 1-$NUM_JOBS -cwd -N "${PREFIX}cov" -j y -o `pwd`/\$TASK_ID.cov.out $SCRIPT_PATH/coverage.sh
       qsub -V -pe thread 1 -l mem_free=5G -hold_jid "${PREFIX}cns" -cwd -N "${PREFIX}merge" -j y -o `pwd`/merge.out $SCRIPT_PATH/merge.sh
+
+   elif [ $GRID == "LSF" ]; then
+      if [ $# -ge 4 ] && [ x$4 != "x" ]; then
+          bsub ${GRIDOPTS_SUBSET} -J "${PREFIX}subset[1-${NUM_JOBS}]" -oo '%I.subset.out' ${GRIDOPTS} ${SCRIPT_PATH}/subset.sh
+          bsub ${GRIDOPTS_ALN} -J "${PREFIX}align[1-${NUM_JOBS}]" -w "done(${PREFIX}subset[*])" -oo '%I.out' ${GRIDOPTS} "${SCRIPT_PATH}/filterAndAlign.sh"
+
+      else
+          bsub ${GRIDOPTS_ALN} -J "${PREFIX}align[1-${NUM_JOBS}]" -oo '%I.out' ${GRIDOPTS} "${SCRIPT_PATH}/filterAndAlign.sh"
+      fi
+      bsub ${GRIDOPTS_SPLT} -J "${PREFIX}split" -w "done(${PREFIX}align)" -oo split.out ${GRIDOPTS} "${SCRIPT_PATH}/splitByContig.sh"
+      bsub ${GRIDOPTS_CON} -J "${PREFIX}cns[1-${NUM_JOBS}]" -w "done(${PREFIX}split)" -oo '%I.cns.out' ${GRIDOPTS} "${SCRIPT_PATH}/consensus.sh"
+      bsub ${GRIDOPTS_MRG} -J "${PREFIX}merge" -w "done(${PREFIX}cns)" -oo merge.out ${GRIDOPTS} "${SCRIPT_PATH}/merge.sh"
+
    elif [ $GRID == "SLURM" ]; then
       # get batch limits
       maxarray=`scontrol show config | grep MaxArraySize |awk '{print $NF-1}'`
@@ -121,7 +133,7 @@ if [ $USEGRID -eq 1 ]; then
       job=`cat merge.submit.out |awk '{print "afterany:"$NF}' |tr '\n' ',' |awk '{print substr($0, 1, length($0)-1)}'`
       echo "Submitted merge job $job"
    else
-      echo "Error: unknown grid engine specified $GRID, currently supported are SGE or SLURM"
+      echo "Error: unknown grid engine specified $GRID, currently supported are SGE, SLURM, or LSF"
       exit
    fi
 else

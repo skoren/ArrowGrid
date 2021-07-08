@@ -22,11 +22,14 @@
 
 SCRIPT_PATH=`cat scripts`
 
-source ~/.profile
+if [ -e `pwd`/CONFIG ]; then
+   CONFIG=`pwd`/CONFIG
+else
+   CONFIG=${SCRIPT_PATH}/CONFIG
+fi
+. "${CONFIG}"
 
-LD_ADDITION=`cat ${SCRIPT_PATH}/CONFIG |grep -v "#"  |grep LD_LIBRARY_PATH |wc -l`
-if [ $LD_ADDITION -eq 1 ]; then
-   LD_ADDITION=`cat ${SCRIPT_PATH}/CONFIG |grep -v "#"  |grep LD_LIBRARY_PATH |tail -n 1 |awk '{print $NF}'`
+if [ ! -z "${LD_ADDITION}" ]; then
    export LD_LIBRARY_PATH=$LD_ADDITION:$LD_LIBRARY_PATH
 fi
 
@@ -39,11 +42,14 @@ if [ "$arch" = "x86_64" ] ; then
   arch="amd64"
 fi
 
-GRID=`cat $CONFIG |grep -v "#" |grep  GRIDENGINE |tail -n 1 |awk '{print $2}'`
-
 if [ $GRID == "SGE" ]; then
    baseid=$SGE_TASK_ID
    offset=$1
+elif [ $GRID == "LSF" ]; then
+   baseid=$LSB_JOBINDEX
+   offset=$1
+   #LSB_MCPU_HOSTS=blade18-1-2.gsc.wustl.edu 8
+   cores=$(echo ${LSB_MCPU_HOSTS} | awk '{print $2}')
 elif [ $GRID == "SLURM" ]; then
    baseid=$SLURM_ARRAY_TASK_ID
    offset=$1
